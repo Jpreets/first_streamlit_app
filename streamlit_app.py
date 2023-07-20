@@ -24,15 +24,24 @@ streamlit.dataframe(fruits_to_show);
 
 streamlit.header("Fruityvice Fruit Advice!");
 
-fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
-streamlit.write('The user entered ', fruit_choice)
 
-fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+fruit_choice);
 
-# write your own comment -what does the next line do? 
-fruityvice_normalized = pandas.json_normalize(fruityvice_response.json());
-# write your own comment - what does this do?
-streamlit.dataframe(fruityvice_normalized);
+def get_fruityvice_data(this_fruit_choice):
+    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+this_fruit_choice);
+    # write your own comment -what does the next line do? 
+    fruityvice_normalized = pandas.json_normalize(fruityvice_response.json());
+    return fruityvice_normalized;
+
+try:
+    fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
+    if not fruit_choice:
+          streamlit.error('Please enter Fruit to get info')
+    else:    
+        fruityvice_normalized = get_fruityvice_data(fruit_choice);
+        streamlit.dataframe(fruityvice_normalized);
+
+
+    
 
 my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
 my_cur = my_cnx.cursor()
@@ -41,16 +50,26 @@ my_data_row = my_cur.fetchone()
 streamlit.text("Hello from Snowflake:")
 streamlit.text(my_data_row)
 
-try:
-    fruit_choice = streamlit.text_input('What fruit would you like information about?','Banana')
+
+def get_fruit_load_list():
+    with  my_cnx.cursor() as my_cur
+    my_cur.execute("SELECT * from fruit_load_list ")
+    return my_cur.fetchall();
     
-    if not fruit_choice:
-        streamlit.error('Please enter Fruit to get info')
-    else:
-      my_cur.execute("SELECT * from fruit_load_list where FRUIT_NAME='"+fruit_choice+"' ")
-      my_data_rows = my_cur.fetchall()
-      streamlit.header("Fruit load list contain:")
-      streamlit.dataframe(my_data_rows);
-  
+def insert_row_snowflake(new_fruit):
+    with  my_cnx.cursor() as my_cur
+    my_cur.execute("insert into fruit_load_list values('"+new_fruit+"')");
+    return 'Thanks for Adding new Fruit '+new_fruit;
+
+if streamlit.button('Get Fruit List'):
+    my_data_rows = get_fruit_load_list();
+    streamlit.header("Fruit load list contain:")
+    streamlit.dataframe(my_data_rows);    
+
+add_my_fruit = streamlit.text_input('What fruit would you like to add');
+if streamlit.button('Add Fruit to the List'):
+    message = insert_row_snowflake(add_my_fruit);
+    streamlit.text(message);    
+
 except URLError as e:
    streamlit.error();
