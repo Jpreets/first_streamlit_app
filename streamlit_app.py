@@ -24,8 +24,6 @@ streamlit.dataframe(fruits_to_show);
 
 streamlit.header("Fruityvice Fruit Advice!");
 
-
-
 def get_fruityvice_data(this_fruit_choice):
     fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+this_fruit_choice);
     # write your own comment -what does the next line do? 
@@ -40,8 +38,6 @@ try:
         fruityvice_normalized = get_fruityvice_data(fruit_choice);
         streamlit.dataframe(fruityvice_normalized);
 
-
-    
 
 my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
 my_cur = my_cnx.cursor()
