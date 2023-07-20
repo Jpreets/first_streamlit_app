@@ -6,6 +6,7 @@ from urllib.error import URLError
 
 
 my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
+my_cur = my_cnx.cursor();
 
 def get_fruityvice_data(this_fruit_choice):
     fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+this_fruit_choice);
@@ -14,12 +15,10 @@ def get_fruityvice_data(this_fruit_choice):
     return fruityvice_normalized;
 
 def get_fruit_load_list():
-    with  my_cnx.cursor() as my_cur;
     my_cur.execute("SELECT * from fruit_load_list ");
     return my_cur.fetchall();
     
 def insert_row_snowflake(new_fruit):
-    with  my_cnx.cursor() as my_cur;
     my_cur.execute("insert into fruit_load_list values('"+new_fruit+"')");
     return 'Thanks for Adding new Fruit '+new_fruit;
 
