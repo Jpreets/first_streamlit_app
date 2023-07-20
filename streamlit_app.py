@@ -4,6 +4,23 @@ import requests;
 import snowflake.connector;
 from urllib.error import URLError
 
+def get_fruityvice_data(this_fruit_choice):
+    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+this_fruit_choice);
+    # write your own comment -what does the next line do? 
+    fruityvice_normalized = pandas.json_normalize(fruityvice_response.json());
+    return fruityvice_normalized;
+
+def get_fruit_load_list():
+    with  my_cnx.cursor() as my_cur
+    my_cur.execute("SELECT * from fruit_load_list ")
+    return my_cur.fetchall();
+    
+def insert_row_snowflake(new_fruit):
+    with  my_cnx.cursor() as my_cur
+    my_cur.execute("insert into fruit_load_list values('"+new_fruit+"')");
+    return 'Thanks for Adding new Fruit '+new_fruit;
+
+
 streamlit.title("My Parents New Healthy Diner");
 
 streamlit.header("🥣 Breakfast Menu");
@@ -24,12 +41,6 @@ streamlit.dataframe(fruits_to_show);
 
 streamlit.header("Fruityvice Fruit Advice!");
 
-def get_fruityvice_data(this_fruit_choice):
-    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/"+this_fruit_choice);
-    # write your own comment -what does the next line do? 
-    fruityvice_normalized = pandas.json_normalize(fruityvice_response.json());
-    return fruityvice_normalized;
-
 try:
     fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
     if not fruit_choice:
@@ -37,18 +48,8 @@ try:
     else:    
         fruityvice_normalized = get_fruityvice_data(fruit_choice);
         streamlit.dataframe(fruityvice_normalized);
-
-
-
-def get_fruit_load_list():
-    with  my_cnx.cursor() as my_cur
-    my_cur.execute("SELECT * from fruit_load_list ")
-    return my_cur.fetchall();
-    
-def insert_row_snowflake(new_fruit):
-    with  my_cnx.cursor() as my_cur
-    my_cur.execute("insert into fruit_load_list values('"+new_fruit+"')");
-    return 'Thanks for Adding new Fruit '+new_fruit;
+except URLError as e:
+   streamlit.error();
 
 if streamlit.button('Get Fruit List'):
     my_cnx = snowflake.connector.connect(**streamlit.secrets["snowflake"])
@@ -62,5 +63,4 @@ if streamlit.button('Add Fruit to the List'):
     message = insert_row_snowflake(add_my_fruit);
     streamlit.text(message);    
 
-except URLError as e:
-   streamlit.error();
+
