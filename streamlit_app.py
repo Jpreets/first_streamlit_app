@@ -2,6 +2,7 @@ import streamlit;
 import pandas;
 import requests;
 import snowflake.connector;
+from urllib.error import URLError
 
 streamlit.title("My Parents New Healthy Diner");
 
@@ -40,14 +41,15 @@ my_data_row = my_cur.fetchone()
 streamlit.text("Hello from Snowflake:")
 streamlit.text(my_data_row)
 
-
+try:
 fruit_choice = streamlit.text_input('What fruit would you like information about?','Banana')
-streamlit.write('The user entered ', fruit_choice)
-
-my_cur.execute("SELECT * from fruit_load_list where FRUIT_NAME='"+fruit_choice+"' ")
-my_data_rows = my_cur.fetchall()
-streamlit.header("Fruit load list contain:")
-
-streamlit.dataframe(my_data_rows);
-
-
+if not fruit_choice:
+    streamlit.error('Please enter Fruit to get info')
+else:
+  my_cur.execute("SELECT * from fruit_load_list where FRUIT_NAME='"+fruit_choice+"' ")
+  my_data_rows = my_cur.fetchall()
+  streamlit.header("Fruit load list contain:")
+  streamlit.dataframe(my_data_rows);
+  
+except URLError as e:
+   streamlit.error();
